@@ -1,4 +1,3 @@
 self.addEventListener('fetch', (event) => {
-  // Cho phép app tải trang bình thường từ mạng
-  event.respondWith(fetch(event.request));
+  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
 });
