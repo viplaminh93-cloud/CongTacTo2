@@ -1,7 +1,99 @@
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0068ff">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Công Tác Tổ</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0068ff">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f6f9; color: #333; }
+        header { background: #0068ff; color: white; padding: 15px; text-align: center; }
+        nav { display: flex; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
+        nav button { flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        nav button.active { border-bottom: 3px solid #0068ff; color: #0068ff; }
+        .container { padding: 20px; max-width: 800px; margin: auto; }
+        .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .tab-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>Hệ Thống Quản Lý Công Tác</h2>
+    </header>
+
+    <nav>
+        <button class="active" onclick="switchTab(event, 'tab-nhom')">Thành viên</button>
+        <button onclick="switchTab(event, 'tab-phungvu')">Phụng vụ</button>
+        <button onclick="switchTab(event, 'tab-luudong')">Lưu động</button>
+        <button onclick="switchTab(event, 'tab-nhacom')">Nhà cơm</button>
+        <button onclick="switchTab(event, 'tab-tonghop')">Tổng hợp</button>
+    </nav>
+
+    <div class="container">
+        <div id="tab-nhom" class="tab-content active"><h3>Danh sách thành viên</h3><div id="content-nhom">Đang tải dữ liệu...</div></div>
+        <div id="tab-phungvu" class="tab-content"><h3>Lịch Phụng vụ</h3><div id="content-phungvu">Đang tải dữ liệu...</div></div>
+        <div id="tab-luudong" class="tab-content"><h3>Lịch Lưu động</h3><div id="content-luudong">Đang tải dữ liệu...</div></div>
+        <div id="tab-nhacom" class="tab-content"><h3>Lịch Nhà cơm</h3><div id="content-nhacom">Đang tải dữ liệu...</div></div>
+        <div id="tab-tonghop" class="tab-content"><h3>Tổng hợp</h3><div id="content-tonghop">Đang tải dữ liệu...</div></div>
+    </div>
+
+    <script>
+        // Thay link bên dưới bằng link Web App Google Apps Script bạn vừa copy ở Bước 1
+        const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+
+        function switchTab(evt, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        async function loadData() {
+            try {
+                let response = await fetch(API_URL);
+                let data = await response.json();
+                
+                renderTable('content-nhom', data.danh_sach_nhom);
+                renderTable('content-phungvu', data.phung_vu);
+                renderTable('content-luudong', data.luu_dong);
+                renderTable('content-nhacom', data.nha_com);
+                renderTable('content-tonghop', data.tong_hop);
+            } catch (err) {
+                console.error(err);
+                document.querySelectorAll('.container > div').forEach(el => el.innerHTML = "Không thể tải dữ liệu.");
+            }
+        }
+
+        function renderTable(elementId, arrayData) {
+            if (!arrayData || arrayData.length === 0) {
+                document.getElementById(elementId).innerHTML = "<p>Chưa có dữ liệu.</p>";
+                return;
+            }
+            let html = "<table><tr>";
+            let keys = Object.keys(arrayData[0]);
+            keys.forEach(key => html += `<th>${key}</th>`);
+            html += "</tr>";
+            
+            arrayData.forEach(row => {
+                html += "<tr>";
+                keys.forEach(key => html += `<td>${row[key] !== undefined ? row[key] : ''}</td>`);
+                html += "</tr>";
+            });
+            html += "</table>";
+            document.getElementById(elementId).innerHTML = html;
+        }
+
+        loadData();
+
+        // Đăng ký PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
